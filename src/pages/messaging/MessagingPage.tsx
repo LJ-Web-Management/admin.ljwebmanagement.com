@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { api } from '../../lib/apiClient'
+import { usePageTitle } from '../../lib/usePageTitle'
 import type { Message, MessageThread } from '../../lib/types'
 
 export function MessagingPage() {
+  usePageTitle('Messaging')
   const { user } = useAuth()
   const [threads, setThreads] = useState<MessageThread[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)

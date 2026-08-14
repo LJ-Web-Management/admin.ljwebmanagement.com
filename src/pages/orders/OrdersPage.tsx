@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { TimeSince } from '../../components/TimeSince'
 import { api } from '../../lib/apiClient'
 import { ORDER_PHASES } from '../../lib/types'
+import { usePageTitle } from '../../lib/usePageTitle'
 import type { Order, OrderPhase } from '../../lib/types'
 
 const PHASE_COLORS: Record<OrderPhase, string> = {
@@ -18,6 +19,7 @@ const PHASE_COLORS: Record<OrderPhase, string> = {
 }
 
 export function OrdersPage() {
+  usePageTitle('Orders')
   const navigate = useNavigate()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -54,7 +56,7 @@ export function OrdersPage() {
         <input
           value={serviceFilter}
           onChange={(e) => setServiceFilter(e.target.value)}
-          placeholder="Filter by service…"
+          placeholder="Filter by service..."
           className="rounded border border-neutral-300 bg-transparent px-3 py-1.5 text-sm"
         />
         <select
@@ -82,12 +84,13 @@ export function OrdersPage() {
       </div>
 
       {loading ? (
-        <p className="text-sm text-neutral-500">Loading…</p>
+        <p className="text-sm text-neutral-500">Loading...</p>
       ) : (
         <div className="overflow-x-auto rounded border border-neutral-200">
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 text-left">
               <tr>
+                <th className="px-3 py-2">Order #</th>
                 <th className="px-3 py-2">Customer</th>
                 <th className="px-3 py-2">Service</th>
                 <th className="px-3 py-2">Phase</th>
@@ -102,6 +105,7 @@ export function OrdersPage() {
                   onClick={() => navigate(`/orders/${o.id}`)}
                   className="border-t border-neutral-100 cursor-pointer hover:bg-cyan/5"
                 >
+                  <td className="px-3 py-2 text-neutral-500">{o.orderNumber}</td>
                   <td className="px-3 py-2">
                     <Link to={`/orders/${o.id}`} onClick={(e) => e.stopPropagation()} className="font-medium hover:underline">
                       {o.customerName}
@@ -113,7 +117,7 @@ export function OrdersPage() {
                   </td>
                   <td className="px-3 py-2">${o.quotedAmount.toLocaleString()}</td>
                   <td className="px-3 py-2 text-neutral-500">
-                    {o.consultationDate ? <TimeSince date={o.consultationDate} /> : '—'}
+                    {o.consultationDate ? <TimeSince date={o.consultationDate} /> : 'N/A'}
                   </td>
                 </tr>
               ))}

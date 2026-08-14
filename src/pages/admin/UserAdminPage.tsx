@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../lib/apiClient'
 import { PAGE_SECTIONS } from '../../lib/types'
+import { usePageTitle } from '../../lib/usePageTitle'
 import type { PageKey, Role, User } from '../../lib/types'
 
 export function UserAdminPage() {
+  usePageTitle('Users')
   const [users, setUsers] = useState<User[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [visiblePasswordIds, setVisiblePasswordIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     api.listUsers().then(setUsers)
@@ -13,6 +16,15 @@ export function UserAdminPage() {
 
   const updateUser = (id: string, patch: Partial<User>) => {
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)))
+  }
+
+  const togglePasswordVisible = (id: string) => {
+    setVisiblePasswordIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
   }
 
   const toggleSection = (userId: string, page: PageKey, section: string) => {
@@ -33,6 +45,9 @@ export function UserAdminPage() {
       role: 'employee',
       permissions: {},
       createdAt: new Date().toISOString(),
+      password: '',
+      canChangeOwnPassword: true,
+      canManageOtherPasswords: false,
     }
     setUsers((prev) => [...prev, newUser])
     setEditingId(newUser.id)
@@ -66,38 +81,84 @@ export function UserAdminPage() {
                 onChange={(e) => updateUser(u.id, { role: e.target.value as Role })}
                 className="rounded border border-neutral-300 bg-transparent px-3 py-1.5 text-sm"
               >
-                <option value="admin">Admin — full access</option>
-                <option value="employee">Employee — granular access</option>
-                <option value="demo">Demo — sanitized data</option>
+                <option value="admin">Admin - full access</option>
+                <option value="employee">Employee - granular access</option>
+                <option value="demo">Demo - sanitized data</option>
               </select>
               <button
                 onClick={() => setEditingId(editingId === u.id ? null : u.id)}
                 className="text-sm text-neutral-500 hover:text-neutral-900"
               >
-                {u.role === 'employee' ? (editingId === u.id ? 'Hide permissions' : 'Edit permissions') : ''}
+                {editingId === u.id ? 'Hide details' : 'Edit details'}
               </button>
               <button onClick={() => removeUser(u.id)} className="text-sm text-red-500 hover:text-red-700">
                 Remove
               </button>
             </div>
 
-            {u.role === 'employee' && editingId === u.id && (
-              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-neutral-100">
-                {(Object.keys(PAGE_SECTIONS) as PageKey[]).map((page) => (
-                  <div key={page}>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1">{page}</p>
-                    {PAGE_SECTIONS[page].map((section) => (
-                      <label key={section} className="flex items-center gap-2 text-sm py-0.5">
-                        <input
-                          type="checkbox"
-                          checked={u.permissions[page]?.includes(section) ?? false}
-                          onChange={() => toggleSection(u.id, page, section)}
-                        />
-                        {section}
-                      </label>
+            {editingId === u.id && (
+              <div className="space-y-4 pt-2 border-t border-neutral-100">
+                <div className="flex items-end gap-2 max-w-sm">
+                  <label className="flex-1 space-y-1">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Password</span>
+                    <input
+                      type={visiblePasswordIds.has(u.id) ? 'text' : 'password'}
+                      value={u.password}
+                      onChange={(e) => updateUser(u.id, { password: e.target.value })}
+                      placeholder="Set a password"
+                      className="w-full rounded border border-neutral-300 bg-transparent px-3 py-1.5 text-sm"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisible(u.id)}
+                    className="text-sm text-neutral-500 hover:text-neutral-900 py-1.5"
+                  >
+                    {visiblePasswordIds.has(u.id) ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+
+                {u.role === 'employee' && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1">Password permissions</p>
+                    <label className="flex items-center gap-2 text-sm py-0.5">
+                      <input
+                        type="checkbox"
+                        checked={u.canChangeOwnPassword}
+                        onChange={(e) => updateUser(u.id, { canChangeOwnPassword: e.target.checked })}
+                      />
+                      Can change their own password
+                    </label>
+                    <label className="flex items-center gap-2 text-sm py-0.5">
+                      <input
+                        type="checkbox"
+                        checked={u.canManageOtherPasswords}
+                        onChange={(e) => updateUser(u.id, { canManageOtherPasswords: e.target.checked })}
+                      />
+                      Can view/change other users' passwords
+                    </label>
+                  </div>
+                )}
+
+                {u.role === 'employee' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    {(Object.keys(PAGE_SECTIONS) as PageKey[]).map((page) => (
+                      <div key={page}>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1">{page}</p>
+                        {PAGE_SECTIONS[page].map((section) => (
+                          <label key={section} className="flex items-center gap-2 text-sm py-0.5">
+                            <input
+                              type="checkbox"
+                              checked={u.permissions[page]?.includes(section) ?? false}
+                              onChange={() => toggleSection(u.id, page, section)}
+                            />
+                            {section}
+                          </label>
+                        ))}
+                      </div>
                     ))}
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>

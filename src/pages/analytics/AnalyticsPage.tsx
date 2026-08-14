@@ -16,11 +16,12 @@ import {
 } from 'recharts'
 import { api } from '../../lib/apiClient'
 import { ORDER_PHASES } from '../../lib/types'
+import { usePageTitle } from '../../lib/usePageTitle'
 import type { Order } from '../../lib/types'
 
 const COLORS = ['#193866', '#1eb4e6', '#254a81', '#68ddff', '#0f2544', '#4b5563', '#8fb8e0', '#a8e6f7', '#6b7280']
 
-// Case-insensitive, whitespace-trimmed grouping — mirrors the Postgres
+// Case-insensitive, whitespace-trimmed grouping - mirrors the Postgres
 // LOWER(TRIM(service_text)) grouping the real analytics endpoints use.
 function normalizeService(text: string) {
   return text.trim().toLowerCase()
@@ -37,6 +38,7 @@ function mostCommonCasing(orders: Order[], normalized: string) {
 }
 
 export function AnalyticsPage() {
+  usePageTitle('Analytics')
   const [orders, setOrders] = useState<Order[]>([])
 
   useEffect(() => {

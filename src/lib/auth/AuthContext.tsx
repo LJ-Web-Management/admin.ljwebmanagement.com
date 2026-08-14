@@ -29,7 +29,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const { user, token } = await api.login(email, password)
     localStorage.setItem('idToken', token)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+    // Never persist the password field to localStorage, even in mock mode.
+    const { password: _password, ...storedUser } = user
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(storedUser))
     setUser(user)
   }
 

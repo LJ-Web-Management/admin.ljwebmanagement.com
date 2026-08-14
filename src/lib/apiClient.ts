@@ -1,12 +1,10 @@
 import { API_BASE_URL, USE_MOCK_API } from './env'
 import { mockMessages, mockOrders, mockServiceSuggestions, mockThreads, mockUsers } from './mockData'
-import type { Message, MessageThread, Order, ServiceSuggestion, User } from './types'
+import { searchPastCustomers as searchLocalPastCustomers } from './pastCustomers'
+import { listTranscripts as listLocalTranscripts } from './transcripts'
+import type { ChatTranscript, Message, MessageThread, Order, PastCustomer, ServiceSuggestion, User } from './types'
 
 const delay = (ms = 250) => new Promise((r) => setTimeout(r, ms))
-
-// Mock-only credential gate until Cognito is provisioned — this is not a
-// real secret and grants no access to real data, only the mock demo build.
-const MOCK_PASSWORD = 'd734937V'
 
 function authHeaders(): HeadersInit {
   const token = localStorage.getItem('idToken')
@@ -27,7 +25,7 @@ export const api = {
     if (USE_MOCK_API) {
       await delay()
       const user = mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase())
-      if (!user || password !== MOCK_PASSWORD) throw new Error('Invalid email or password')
+      if (!user || password !== user.password) throw new Error('Invalid email or password')
       return { user, token: 'mock-token' }
     }
     return request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) })
@@ -73,5 +71,21 @@ export const api = {
       return mockMessages[threadId] ?? []
     }
     return request(`/messaging/threads/${threadId}/messages`)
+  },
+
+  async searchPastCustomers(q: string): Promise<PastCustomer[]> {
+    if (USE_MOCK_API) {
+      await delay(120)
+      return searchLocalPastCustomers(q)
+    }
+    return request(`/customers/search?q=${encodeURIComponent(q)}`)
+  },
+
+  async listTranscripts(): Promise<ChatTranscript[]> {
+    if (USE_MOCK_API) {
+      await delay()
+      return listLocalTranscripts()
+    }
+    return request('/transcripts')
   },
 }

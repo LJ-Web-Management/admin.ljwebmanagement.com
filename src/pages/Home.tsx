@@ -2,11 +2,12 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth/AuthContext'
 import type { PageKey } from '../lib/types'
 
-const FALLBACK_ORDER: PageKey[] = ['orders', 'analytics', 'messaging', 'admin']
+const FALLBACK_ORDER: PageKey[] = ['analytics', 'orders', 'messaging', 'transcripts', 'admin']
 const PATHS: Record<PageKey, string> = {
   orders: '/orders',
   analytics: '/analytics',
   messaging: '/messaging',
+  transcripts: '/transcripts',
   admin: '/admin/users',
 }
 

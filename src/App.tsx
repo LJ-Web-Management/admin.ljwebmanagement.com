@@ -9,6 +9,7 @@ import { Login } from './pages/Login'
 import { MessagingPage } from './pages/messaging/MessagingPage'
 import { OrderForm } from './pages/orders/OrderForm'
 import { OrdersPage } from './pages/orders/OrdersPage'
+import { TranscriptsPage } from './pages/transcripts/TranscriptsPage'
 
 export default function App() {
   return (
@@ -61,6 +62,14 @@ export default function App() {
               element={
                 <ProtectedRoute page="messaging">
                   <MessagingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/transcripts"
+              element={
+                <ProtectedRoute page="transcripts">
+                  <TranscriptsPage />
                 </ProtectedRoute>
               }
             />
