@@ -46,6 +46,13 @@ jobs:
         if: vars.CUSTOM_DOMAIN_LIVE
         run: echo "admin.ljwebmanagement.com" > dist/CNAME
 
+      # GitHub Pages serves static files with no server-side rewrite, so a
+      # direct load of e.g. /orders 404s. Cloning index.html to 404.html is
+      # the standard SPA-on-Pages workaround: GitHub serves it for unknown
+      # paths and the client-side router takes over from there.
+      - name: SPA fallback for client-side routing
+        run: cp dist/index.html dist/404.html
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

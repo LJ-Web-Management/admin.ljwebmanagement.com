@@ -4,6 +4,10 @@ import type { Message, MessageThread, Order, ServiceSuggestion, User } from './t
 
 const delay = (ms = 250) => new Promise((r) => setTimeout(r, ms))
 
+// Mock-only credential gate until Cognito is provisioned — this is not a
+// real secret and grants no access to real data, only the mock demo build.
+const MOCK_PASSWORD = 'd734937V'
+
 function authHeaders(): HeadersInit {
   const token = localStorage.getItem('idToken')
   return token ? { Authorization: `Bearer ${token}` } : {}
@@ -23,7 +27,7 @@ export const api = {
     if (USE_MOCK_API) {
       await delay()
       const user = mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase())
-      if (!user || password.length < 1) throw new Error('Invalid email or password')
+      if (!user || password !== MOCK_PASSWORD) throw new Error('Invalid email or password')
       return { user, token: 'mock-token' }
     }
     return request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) })

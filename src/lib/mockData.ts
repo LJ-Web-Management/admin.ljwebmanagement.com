@@ -6,27 +6,10 @@ const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString
 export const mockUsers: User[] = [
   {
     id: 'u1',
-    email: 'admin@ljwebmanagement.com',
+    email: 'marketing@ljwebmanagement.com',
     role: 'admin',
     permissions: {},
     createdAt: daysAgo(200),
-  },
-  {
-    id: 'u2',
-    email: 'employee@ljwebmanagement.com',
-    role: 'employee',
-    permissions: {
-      orders: ['view', 'create', 'edit', 'notes'],
-      analytics: ['revenue'],
-    },
-    createdAt: daysAgo(90),
-  },
-  {
-    id: 'u3',
-    email: 'demo@ljwebmanagement.com',
-    role: 'demo',
-    permissions: {},
-    createdAt: daysAgo(30),
   },
 ]
 
@@ -65,29 +48,17 @@ export const mockServiceSuggestions: ServiceSuggestion[] = [
 
 export const mockThreads: MessageThread[] = [
   {
-    id: 't1',
-    isGroup: false,
-    name: null,
-    participantEmails: ['admin@ljwebmanagement.com', 'employee@ljwebmanagement.com'],
-    lastMessagePreview: 'Sounds good, thanks!',
-    lastMessageAt: daysAgo(0.1),
-  },
-  {
     id: 't2',
     isGroup: true,
     name: 'Order Ops',
-    participantEmails: ['admin@ljwebmanagement.com', 'employee@ljwebmanagement.com', 'demo@ljwebmanagement.com'],
+    participantEmails: ['marketing@ljwebmanagement.com'],
     lastMessagePreview: 'New order came in.',
     lastMessageAt: daysAgo(1),
   },
 ]
 
 export const mockMessages: Record<string, Message[]> = {
-  t1: [
-    { id: 'm1', threadId: 't1', senderEmail: 'admin@ljwebmanagement.com', body: 'Hey, got a minute?', sentAt: daysAgo(0.2) },
-    { id: 'm2', threadId: 't1', senderEmail: 'employee@ljwebmanagement.com', body: 'Sounds good, thanks!', sentAt: daysAgo(0.1) },
-  ],
   t2: [
-    { id: 'm3', threadId: 't2', senderEmail: 'admin@ljwebmanagement.com', body: 'New order came in.', sentAt: daysAgo(1) },
+    { id: 'm3', threadId: 't2', senderEmail: 'marketing@ljwebmanagement.com', body: 'New order came in.', sentAt: daysAgo(1) },
   ],
 }
