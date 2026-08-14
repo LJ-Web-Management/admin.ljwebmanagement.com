@@ -1,7 +1,19 @@
 # Backend infrastructure (not yet provisioned)
 
-This repo currently ships the frontend only (build order step 1). Steps 2–7 need an AWS
-account with credentials this environment does not have. To continue:
+This repo currently ships the frontend only (build order step 1), live for testing at
+https://lj-web-management.github.io/admin.ljwebmanagement.com/ (mock data only). Steps
+2–7 need an AWS account with credentials this environment does not have. To continue:
+
+## DNS cutover (when Route 53 is ready)
+
+The frontend currently builds for the GitHub Pages *project page* path
+(`/admin.ljwebmanagement.com/`), since the custom domain isn't live. Once
+`admin.ljwebmanagement.com` has DNS pointed at GitHub Pages:
+
+1. Set the repo variable `CUSTOM_DOMAIN_LIVE` (any value) — this switches
+   `deploy-pages.yml` to root-relative asset paths and writes the `CNAME` file again.
+2. Re-set the custom domain: `gh api -X PUT repos/LJ-Web-Management/admin.ljwebmanagement.com/pages -f "cname=admin.ljwebmanagement.com"`.
+3. Push to `main` (or re-run the workflow) to redeploy.
 
 ## What's needed from you
 

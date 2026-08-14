@@ -29,17 +29,22 @@ jobs:
 
       # VITE_API_BASE_URL is intentionally left unset until the AWS backend
       # is deployed, so production Pages builds still serve placeholder data.
+      #
+      # BASE_PATH: this repo is served as a GitHub Pages *project* page
+      # (lj-web-management.github.io/admin.ljwebmanagement.com/) until DNS
+      # cutover to the custom domain. Set the repo variable CUSTOM_DOMAIN_LIVE
+      # to any value once admin.ljwebmanagement.com resolves, which switches
+      # the build to root-relative asset paths and re-adds the CNAME file.
       - name: Build
         env:
           VITE_ENV: ${{ vars.VITE_API_BASE_URL && 'production' || 'mock' }}
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          BASE_PATH: ${{ vars.CUSTOM_DOMAIN_LIVE && '/' || '/admin.ljwebmanagement.com/' }}
         run: npm run build
 
-      # Custom domain CNAME is intentionally omitted for now — DNS for
-      # admin.ljwebmanagement.com isn't live yet, so this deploys to the
-      # free lj-web-management.github.io/admin.ljwebmanagement.com URL for
-      # testing. Re-add `echo "admin.ljwebmanagement.com" > dist/CNAME` here
-      # (and set the custom domain via the Pages API/settings) during DNS cutover.
+      - name: Add custom domain CNAME
+        if: vars.CUSTOM_DOMAIN_LIVE
+        run: echo "admin.ljwebmanagement.com" > dist/CNAME
 
       - uses: actions/upload-pages-artifact@v3
         with:
