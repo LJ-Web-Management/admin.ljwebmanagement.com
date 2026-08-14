@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { TimeSince } from '../../components/TimeSince'
 import { api } from '../../lib/apiClient'
+import { useAuth } from '../../lib/auth/AuthContext'
 import { ORDER_PHASES } from '../../lib/types'
 import { usePageTitle } from '../../lib/usePageTitle'
 import type { Order, OrderPhase } from '../../lib/types'
@@ -21,6 +22,7 @@ const PHASE_COLORS: Record<OrderPhase, string> = {
 export function OrdersPage() {
   usePageTitle('Orders')
   const navigate = useNavigate()
+  const { canAccessSection } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [serviceFilter, setServiceFilter] = useState('')
@@ -47,9 +49,11 @@ export function OrdersPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-heading font-semibold text-navy">Orders</h1>
-        <Link to="/orders/new" className="rounded bg-navy hover:bg-navy-dark text-white transition-colors px-3 py-1.5 text-sm">
-          New order
-        </Link>
+        {canAccessSection('orders', 'create') && (
+          <Link to="/orders/new" className="rounded bg-navy hover:bg-navy-dark text-white transition-colors px-3 py-1.5 text-sm">
+            New order
+          </Link>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-3">

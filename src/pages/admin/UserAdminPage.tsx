@@ -59,7 +59,8 @@ export function UserAdminPage() {
     api.createUser(newUser).catch(() => {})
   }
 
-  const removeUser = (id: string) => {
+  const removeUser = (id: string, email: string) => {
+    if (!confirm(`Remove ${email || 'this user'}? This can't be undone.`)) return
     setUsers((prev) => prev.filter((u) => u.id !== id))
     api.deleteUser(id).catch(() => {})
   }
@@ -99,7 +100,7 @@ export function UserAdminPage() {
               >
                 {editingId === u.id ? 'Hide details' : 'Edit details'}
               </button>
-              <button onClick={() => removeUser(u.id)} className="text-sm text-red-500 hover:text-red-700">
+              <button onClick={() => removeUser(u.id, u.email)} className="text-sm text-red-500 hover:text-red-700">
                 Remove
               </button>
             </div>

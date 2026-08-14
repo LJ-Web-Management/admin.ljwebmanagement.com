@@ -2,7 +2,15 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../lib/apiClient'
 import type { ServiceSuggestion } from '../lib/types'
 
-export function ServiceInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+export function ServiceInput({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: string
+  onChange: (v: string) => void
+  disabled?: boolean
+}) {
   const [suggestions, setSuggestions] = useState<ServiceSuggestion[]>([])
   const [open, setOpen] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -25,7 +33,8 @@ export function ServiceInput({ value, onChange }: { value: string; onChange: (v:
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder="e.g. Website Redesign"
-        className="w-full rounded border border-neutral-300 bg-transparent px-3 py-2 text-sm"
+        disabled={disabled}
+        className="w-full rounded border border-neutral-300 bg-transparent px-3 py-2 text-sm disabled:opacity-60"
       />
       {open && suggestions.length > 0 && (
         <ul className="absolute z-10 mt-1 w-full rounded border border-neutral-200 bg-white shadow max-h-48 overflow-auto">

@@ -34,7 +34,11 @@ export const api = {
   async listOrders(): Promise<Order[]> {
     if (USE_MOCK_API) {
       await delay()
-      return mockOrders
+      // Copy, not the live reference - mockOrders is mutated in place by
+      // saveOrder, and handing out the same array reference on every call
+      // means a caller that re-fetches after a mutation and calls
+      // setState(sameRef) gets silently skipped by React's Object.is bail-out.
+      return [...mockOrders]
     }
     return request('/orders')
   },
@@ -69,7 +73,7 @@ export const api = {
   async listUsers(): Promise<User[]> {
     if (USE_MOCK_API) {
       await delay()
-      return mockUsers
+      return [...mockUsers]
     }
     return request('/admin/users')
   },
@@ -110,9 +114,26 @@ export const api = {
   async listThreads(): Promise<MessageThread[]> {
     if (USE_MOCK_API) {
       await delay()
-      return mockThreads
+      return [...mockThreads]
     }
     return request('/messaging/threads')
+  },
+
+  async createThread(input: { isGroup: boolean; name: string | null; participantEmails: string[] }): Promise<MessageThread> {
+    if (USE_MOCK_API) {
+      await delay()
+      const thread: MessageThread = {
+        id: crypto.randomUUID(),
+        isGroup: input.isGroup,
+        name: input.name,
+        participantEmails: input.participantEmails,
+        lastMessagePreview: '',
+        lastMessageAt: new Date().toISOString(),
+      }
+      mockThreads.push(thread)
+      return thread
+    }
+    return request('/messaging/threads', { method: 'POST', body: JSON.stringify(input) })
   },
 
   async listMessages(threadId: string): Promise<Message[]> {

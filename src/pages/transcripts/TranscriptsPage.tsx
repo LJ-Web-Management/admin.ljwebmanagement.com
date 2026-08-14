@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useAuth } from '../../lib/auth/AuthContext'
 import { API_BASE_URL, USE_MOCK_API } from '../../lib/env'
 import { usePageTitle } from '../../lib/usePageTitle'
 import { api } from '../../lib/apiClient'
@@ -6,6 +7,7 @@ import type { ChatTranscript } from '../../lib/types'
 
 export function TranscriptsPage() {
   usePageTitle('Chatbot Transcripts')
+  const { canAccessSection } = useAuth()
   const [transcripts, setTranscripts] = useState<ChatTranscript[]>([])
   const [loading, setLoading] = useState(true)
   const [showSetup, setShowSetup] = useState(false)
@@ -39,10 +41,12 @@ export function TranscriptsPage() {
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-heading font-semibold text-navy">Chatbot Transcripts</h1>
-        <label className="rounded bg-navy hover:bg-navy-dark text-white transition-colors px-3 py-1.5 text-sm cursor-pointer">
-          Upload transcript
-          <input type="file" accept=".txt,.html,.eml,.pdf" onChange={onFileSelected} className="hidden" />
-        </label>
+        {canAccessSection('transcripts', 'upload') && (
+          <label className="rounded bg-navy hover:bg-navy-dark text-white transition-colors px-3 py-1.5 text-sm cursor-pointer">
+            Upload transcript
+            <input type="file" accept=".txt,.html,.eml,.pdf" onChange={onFileSelected} className="hidden" />
+          </label>
+        )}
       </div>
 
       <div className="rounded border border-neutral-200 p-4">

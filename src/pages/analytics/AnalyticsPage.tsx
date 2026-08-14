@@ -15,6 +15,7 @@ import {
   YAxis,
 } from 'recharts'
 import { api } from '../../lib/apiClient'
+import { useAuth } from '../../lib/auth/AuthContext'
 import { ORDER_PHASES } from '../../lib/types'
 import { usePageTitle } from '../../lib/usePageTitle'
 import type { Order } from '../../lib/types'
@@ -39,6 +40,7 @@ function mostCommonCasing(orders: Order[], normalized: string) {
 
 export function AnalyticsPage() {
   usePageTitle('Analytics')
+  const { canAccessSection } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
 
   useEffect(() => {
@@ -67,7 +69,9 @@ export function AnalyticsPage() {
   }, [orders])
 
   const phaseDistribution = useMemo(() => {
-    return ORDER_PHASES.map((phase) => ({
+    // "Active" excludes the terminal phase, otherwise this chart's own
+    // label ("active orders") would be contradicted by including it.
+    return ORDER_PHASES.filter((phase) => phase !== 'Finalized (Done)').map((phase) => ({
       phase,
       count: orders.filter((o) => o.phase === phase).length,
     }))
@@ -98,57 +102,63 @@ export function AnalyticsPage() {
         <Stat label="Finalized orders" value={completedOrDone.toString()} />
       </div>
 
-      <ChartCard title="Revenue over time">
-        <ResponsiveContainer width="100%" height={260}>
-          <LineChart data={revenueOverTime}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="month" fontSize={12} />
-            <YAxis fontSize={12} />
-            <Tooltip />
-            <Line type="monotone" dataKey="revenue" stroke="#193866" strokeWidth={2} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
-      </ChartCard>
-
-      <div className="grid grid-cols-2 gap-6">
-        <ChartCard title="Revenue by service (normalized)">
+      {canAccessSection('analytics', 'revenue') && (
+        <ChartCard title="Revenue over time">
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={revenueByService} layout="vertical">
+            <LineChart data={revenueOverTime}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis type="number" fontSize={12} />
-              <YAxis type="category" dataKey="name" width={120} fontSize={12} />
+              <XAxis dataKey="month" fontSize={12} />
+              <YAxis fontSize={12} />
               <Tooltip />
-              <Bar dataKey="revenue" fill="#1eb4e6" />
+              <Line type="monotone" dataKey="revenue" stroke="#193866" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      )}
+
+      {canAccessSection('analytics', 'services') && (
+        <div className="grid grid-cols-2 gap-6">
+          <ChartCard title="Revenue by service (normalized)">
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={revenueByService} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis type="number" fontSize={12} />
+                <YAxis type="category" dataKey="name" width={120} fontSize={12} />
+                <Tooltip />
+                <Bar dataKey="revenue" fill="#1eb4e6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          <ChartCard title="Order count by service (normalized)">
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart>
+                <Pie data={orderCountByService} dataKey="count" nameKey="name" outerRadius={90} label>
+                  {orderCountByService.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </div>
+      )}
+
+      {canAccessSection('analytics', 'phases') && (
+        <ChartCard title="Phase distribution across active orders">
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={phaseDistribution}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis dataKey="phase" fontSize={10} angle={-20} textAnchor="end" interval={0} height={80} />
+              <YAxis fontSize={12} />
+              <Tooltip />
+              <Bar dataKey="count" fill="#254a81" />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-
-        <ChartCard title="Order count by service (normalized)">
-          <ResponsiveContainer width="100%" height={260}>
-            <PieChart>
-              <Pie data={orderCountByService} dataKey="count" nameKey="name" outerRadius={90} label>
-                {orderCountByService.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
-
-      <ChartCard title="Phase distribution across active orders">
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={phaseDistribution}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="phase" fontSize={10} angle={-20} textAnchor="end" interval={0} height={80} />
-            <YAxis fontSize={12} />
-            <Tooltip />
-            <Bar dataKey="count" fill="#254a81" />
-          </BarChart>
-        </ResponsiveContainer>
-      </ChartCard>
+      )}
     </div>
   )
 }
