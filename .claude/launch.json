@@ -10,8 +10,8 @@
     {
       "name": "pages-subpath-test",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["http-server", "/tmp/pages-test", "-p", "4173"],
-      "port": 4173
+      "runtimeArgs": ["http-server", "/tmp/pages-test2", "-p", "4174"],
+      "port": 4174
     }
   ]
 }

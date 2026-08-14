@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { TimeSince } from '../../components/TimeSince'
 import { api } from '../../lib/apiClient'
 import { ORDER_PHASES } from '../../lib/types'
@@ -18,6 +18,7 @@ const PHASE_COLORS: Record<OrderPhase, string> = {
 }
 
 export function OrdersPage() {
+  const navigate = useNavigate()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [serviceFilter, setServiceFilter] = useState('')
@@ -96,9 +97,13 @@ export function OrdersPage() {
             </thead>
             <tbody>
               {filtered.map((o) => (
-                <tr key={o.id} className="border-t border-neutral-100">
+                <tr
+                  key={o.id}
+                  onClick={() => navigate(`/orders/${o.id}`)}
+                  className="border-t border-neutral-100 cursor-pointer hover:bg-cyan/5"
+                >
                   <td className="px-3 py-2">
-                    <Link to={`/orders/${o.id}`} className="font-medium hover:underline">
+                    <Link to={`/orders/${o.id}`} onClick={(e) => e.stopPropagation()} className="font-medium hover:underline">
                       {o.customerName}
                     </Link>
                   </td>
