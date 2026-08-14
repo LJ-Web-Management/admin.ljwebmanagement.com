@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ServiceInput } from '../../components/ServiceInput'
 import { TimeSince } from '../../components/TimeSince'
 import { api } from '../../lib/apiClient'
+import { generateInvoicePdf } from '../../lib/invoice'
 import { ORDER_PHASES } from '../../lib/types'
 import type { AdditionalCost, Order, OrderPhase } from '../../lib/types'
 
@@ -54,9 +55,20 @@ export function OrderForm() {
     setOrder((o) => ({ ...o, additionalCosts: o.additionalCosts.filter((c) => c.id !== costId) }))
   }
 
+  const [generatingInvoice, setGeneratingInvoice] = useState(false)
+
   const onSave = () => {
     // TODO: wire to POST/PUT /orders once the backend API is live.
     navigate('/orders')
+  }
+
+  const onGenerateInvoice = async () => {
+    setGeneratingInvoice(true)
+    try {
+      await generateInvoicePdf(order)
+    } finally {
+      setGeneratingInvoice(false)
+    }
   }
 
   if (loading) return <p className="text-sm text-neutral-500">Loading…</p>
@@ -178,6 +190,16 @@ export function OrderForm() {
         <button onClick={onSave} className="rounded bg-navy hover:bg-navy-dark text-white transition-colors px-4 py-2 text-sm">
           Save order
         </button>
+        {!isNew && (
+          <button
+            onClick={onGenerateInvoice}
+            disabled={generatingInvoice}
+            type="button"
+            className="rounded border border-navy text-navy hover:bg-navy/5 transition-colors px-4 py-2 text-sm disabled:opacity-50"
+          >
+            {generatingInvoice ? 'Generating…' : 'Generate invoice'}
+          </button>
+        )}
         <button onClick={() => navigate('/orders')} type="button" className="px-4 py-2 text-sm text-neutral-500">
           Cancel
         </button>
