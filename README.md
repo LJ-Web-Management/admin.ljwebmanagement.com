@@ -4,9 +4,9 @@ Admin dashboard for LJ Web Management: order management, analytics, and internal
 
 ## Status
 
-Build order (see spec): **(1) repo + Pages + DNS shell - in progress.** Steps 2-7 (AWS
+Build order (see spec): **(1) repo + Pages + DNS shell - in progress.** Steps 2-7 (Supabase
 provisioning, real auth, live order/analytics/messaging APIs) are not started because they
-require AWS credentials that aren't available in this environment. See
+require a Supabase project that doesn't exist yet. See
 [`infra/README.md`](infra/README.md) for what's needed to continue.
 
 Until the backend is deployed and `VITE_API_BASE_URL` points at it, every build (local and
@@ -18,9 +18,9 @@ reachable.
 - **Frontend:** React + TypeScript + Vite, Tailwind CSS, React Router. Deployed to GitHub
   Pages via [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) on
   push to `main`, custom domain `admin.ljwebmanagement.com`.
-- **Backend (planned):** API Gateway (REST + WebSocket) + Lambda, Cognito for auth, RDS
-  Postgres / Aurora Serverless v2, S3 for order PDFs and message attachments. See
-  [`infra/README.md`](infra/README.md).
+- **Backend (planned):** Supabase, Postgres + Auth + Storage + Realtime + Edge Functions.
+  Free at this project's scale. See [`infra/README.md`](infra/README.md) and
+  [`supabase/`](supabase/) for the schema, RLS policies, and Edge Functions.
 
 ## Local development
 

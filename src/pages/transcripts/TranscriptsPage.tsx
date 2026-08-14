@@ -74,18 +74,18 @@ export function TranscriptsPage() {
                 clean transcript file plus a short summary.
               </li>
               <li>
-                Apps Script POSTs the result to this admin API's transcript ingestion endpoint, which stores the
-                file in S3 and inserts a row so it shows up here automatically.
+                Apps Script POSTs the result to the transcripts-ingest Supabase Edge Function, which stores the
+                file in Supabase Storage and inserts a row so it shows up here automatically.
               </li>
             </ol>
             <div className="rounded bg-mist p-3 font-mono text-xs space-y-1">
-              <p>POST {API_BASE_URL || '{VITE_API_BASE_URL}'}/transcripts/upload</p>
-              <p>Header: X-API-Key: &lt;transcripts ingest key, stored in Secrets Manager&gt;</p>
+              <p>POST {API_BASE_URL || '{SUPABASE_URL}'}/functions/v1/transcripts-ingest</p>
+              <p>Header: X-API-Key: &lt;TRANSCRIPTS_INGEST_KEY, stored as a Supabase Edge Function secret&gt;</p>
               <p>Body: {'{ customerName, customerEmail, receivedAt, fileName, summary, fileBase64 }'}</p>
             </div>
             <p className="text-xs text-neutral-500">
               {USE_MOCK_API
-                ? 'This endpoint does not exist yet, it is planned for when the backend (API Gateway + Lambda + S3) is deployed. Use "Upload transcript" above to add one manually until then.'
+                ? 'This endpoint does not exist yet, it is planned for when the Supabase backend is deployed. Use "Upload transcript" above to add one manually until then.'
                 : 'This endpoint is live. The Apps Script automation still needs to be set up separately to call it, use "Upload transcript" above to add one manually until then.'}
             </p>
           </div>

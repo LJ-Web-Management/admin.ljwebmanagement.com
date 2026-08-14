@@ -1,0 +1,24 @@
+name: Keep Supabase project awake
+
+# Free Supabase projects pause after 7 days with no API activity. This
+# pings the project a couple times a week so it never gets there. Only
+# runs once SUPABASE_URL and SUPABASE_ANON_KEY repo secrets/vars exist.
+on:
+  schedule:
+    - cron: '0 13 * * 1,4' # Monday and Thursday, 1pm UTC
+  workflow_dispatch:
+
+jobs:
+  ping:
+    if: vars.SUPABASE_URL != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST endpoint
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          curl -sf "$SUPABASE_URL/rest/v1/" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -o /dev/null
