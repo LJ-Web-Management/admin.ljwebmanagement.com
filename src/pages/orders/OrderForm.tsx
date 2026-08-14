@@ -4,6 +4,7 @@ import { PastCustomerSearch } from '../../components/PastCustomerSearch'
 import { ServiceInput } from '../../components/ServiceInput'
 import { TimeSince } from '../../components/TimeSince'
 import { api } from '../../lib/apiClient'
+import { USE_MOCK_API } from '../../lib/env'
 import { generateInvoicePdf } from '../../lib/invoice'
 import { ORDER_PHASES, STARTING_ORDER_NUMBER } from '../../lib/types'
 import { usePageTitle } from '../../lib/usePageTitle'
@@ -104,10 +105,16 @@ export function OrderForm() {
   }
 
   const [generatingInvoice, setGeneratingInvoice] = useState(false)
+  const [saving, setSaving] = useState(false)
 
-  const onSave = () => {
-    // TODO: wire to POST/PUT /orders once the backend API is live.
-    navigate('/orders')
+  const onSave = async () => {
+    setSaving(true)
+    try {
+      await api.saveOrder(order)
+      navigate('/orders')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const onGenerateInvoice = async () => {
@@ -297,8 +304,9 @@ export function OrderForm() {
       <div className="space-y-2">
         <h2 className="text-sm font-semibold">Documents</h2>
         <p className="text-xs text-neutral-500">
-          Anyone with permission to view this order can download these files. Once the backend is deployed, uploads
-          store to a private S3 bucket via signed URL instead of a session-local link.
+          Anyone with permission to view this order can download these files.
+          {USE_MOCK_API &&
+            ' Once the backend is deployed, uploads store to a private S3 bucket via signed URL instead of a session-local link.'}
         </p>
         <input type="file" accept={ACCEPTED_DOCUMENT_TYPES} multiple onChange={onFilesSelected} className="text-sm" />
         {order.documents.length > 0 && (
@@ -318,8 +326,12 @@ export function OrderForm() {
       </div>
 
       <div className="flex gap-2">
-        <button onClick={onSave} className="rounded bg-navy hover:bg-navy-dark text-white transition-colors px-4 py-2 text-sm">
-          Save order
+        <button
+          onClick={onSave}
+          disabled={saving}
+          className="rounded bg-navy hover:bg-navy-dark text-white transition-colors px-4 py-2 text-sm disabled:opacity-50"
+        >
+          {saving ? 'Saving...' : 'Save order'}
         </button>
         {!isNew && (
           <button

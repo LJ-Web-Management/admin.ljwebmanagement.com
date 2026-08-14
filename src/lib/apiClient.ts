@@ -1,7 +1,7 @@
 import { API_BASE_URL, USE_MOCK_API } from './env'
 import { mockMessages, mockOrders, mockServiceSuggestions, mockThreads, mockUsers } from './mockData'
-import { searchPastCustomers as searchLocalPastCustomers } from './pastCustomers'
-import { listTranscripts as listLocalTranscripts } from './transcripts'
+import { addPastCustomers as addLocalPastCustomers, searchPastCustomers as searchLocalPastCustomers } from './pastCustomers'
+import { addTranscript as addLocalTranscript, listTranscripts as listLocalTranscripts } from './transcripts'
 import type { ChatTranscript, Message, MessageThread, Order, PastCustomer, ServiceSuggestion, User } from './types'
 
 const delay = (ms = 250) => new Promise((r) => setTimeout(r, ms))
@@ -39,6 +39,23 @@ export const api = {
     return request('/orders')
   },
 
+  async saveOrder(order: Order): Promise<Order> {
+    if (USE_MOCK_API) {
+      await delay()
+      const index = mockOrders.findIndex((o) => o.id === order.id)
+      if (index === -1) {
+        const created = { ...order, id: order.id || crypto.randomUUID() }
+        mockOrders.push(created)
+        return created
+      }
+      mockOrders[index] = order
+      return order
+    }
+    return order.id
+      ? request(`/orders/${order.id}`, { method: 'PUT', body: JSON.stringify(order) })
+      : request('/orders', { method: 'POST', body: JSON.stringify(order) })
+  },
+
   async suggestServices(q: string): Promise<ServiceSuggestion[]> {
     if (USE_MOCK_API) {
       await delay(120)
@@ -55,6 +72,39 @@ export const api = {
       return mockUsers
     }
     return request('/admin/users')
+  },
+
+  async saveUser(user: User): Promise<User> {
+    if (USE_MOCK_API) {
+      await delay()
+      const index = mockUsers.findIndex((u) => u.id === user.id)
+      if (index === -1) {
+        mockUsers.push(user)
+      } else {
+        mockUsers[index] = user
+      }
+      return user
+    }
+    return request(`/admin/users/${user.id}`, { method: 'PUT', body: JSON.stringify(user) })
+  },
+
+  async createUser(user: User): Promise<User> {
+    if (USE_MOCK_API) {
+      await delay()
+      mockUsers.push(user)
+      return user
+    }
+    return request('/admin/users', { method: 'POST', body: JSON.stringify(user) })
+  },
+
+  async deleteUser(id: string): Promise<void> {
+    if (USE_MOCK_API) {
+      await delay()
+      const index = mockUsers.findIndex((u) => u.id === id)
+      if (index !== -1) mockUsers.splice(index, 1)
+      return
+    }
+    await request(`/admin/users/${id}`, { method: 'DELETE' })
   },
 
   async listThreads(): Promise<MessageThread[]> {
@@ -81,6 +131,14 @@ export const api = {
     return request(`/customers/search?q=${encodeURIComponent(q)}`)
   },
 
+  async importPastCustomers(customers: Omit<PastCustomer, 'id'>[]): Promise<PastCustomer[]> {
+    if (USE_MOCK_API) {
+      await delay()
+      return addLocalPastCustomers(customers)
+    }
+    return request('/customers/import', { method: 'POST', body: JSON.stringify({ customers }) })
+  },
+
   async listTranscripts(): Promise<ChatTranscript[]> {
     if (USE_MOCK_API) {
       await delay()
@@ -88,4 +146,25 @@ export const api = {
     }
     return request('/transcripts')
   },
+
+  async uploadTranscript(transcript: Omit<ChatTranscript, 'id'>, file: File): Promise<ChatTranscript> {
+    if (USE_MOCK_API) {
+      await delay()
+      return addLocalTranscript({ ...transcript, url: URL.createObjectURL(file) })
+    }
+    const fileBase64 = await fileToBase64(file)
+    return request('/transcripts/upload', {
+      method: 'POST',
+      body: JSON.stringify({ ...transcript, fileBase64 }),
+    })
+  },
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve((reader.result as string).split(',')[1] ?? '')
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
 }

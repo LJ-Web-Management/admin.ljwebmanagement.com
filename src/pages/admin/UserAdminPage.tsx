@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../lib/apiClient'
+import { USE_MOCK_API } from '../../lib/env'
 import { PAGE_SECTIONS } from '../../lib/types'
 import { usePageTitle } from '../../lib/usePageTitle'
 import type { PageKey, Role, User } from '../../lib/types'
@@ -14,8 +15,17 @@ export function UserAdminPage() {
     api.listUsers().then(setUsers)
   }, [])
 
+  // Updates local state immediately for responsive typing; the caller
+  // decides when to persist via commitUser (on blur/discrete actions),
+  // so text fields don't fire a request per keystroke.
   const updateUser = (id: string, patch: Partial<User>) => {
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)))
+  }
+
+  const commitUser = (user: User, patch: Partial<User> = {}) => {
+    const next = { ...user, ...patch }
+    setUsers((prev) => prev.map((u) => (u.id === user.id ? next : u)))
+    api.saveUser(next).catch(() => {})
   }
 
   const togglePasswordVisible = (id: string) => {
@@ -27,15 +37,10 @@ export function UserAdminPage() {
     })
   }
 
-  const toggleSection = (userId: string, page: PageKey, section: string) => {
-    setUsers((prev) =>
-      prev.map((u) => {
-        if (u.id !== userId) return u
-        const current = u.permissions[page] ?? []
-        const next = current.includes(section) ? current.filter((s) => s !== section) : [...current, section]
-        return { ...u, permissions: { ...u.permissions, [page]: next } }
-      }),
-    )
+  const toggleSection = (user: User, page: PageKey, section: string) => {
+    const current = user.permissions[page] ?? []
+    const nextSections = current.includes(section) ? current.filter((s) => s !== section) : [...current, section]
+    commitUser(user, { permissions: { ...user.permissions, [page]: nextSections } })
   }
 
   const addUser = () => {
@@ -51,10 +56,12 @@ export function UserAdminPage() {
     }
     setUsers((prev) => [...prev, newUser])
     setEditingId(newUser.id)
+    api.createUser(newUser).catch(() => {})
   }
 
   const removeUser = (id: string) => {
     setUsers((prev) => prev.filter((u) => u.id !== id))
+    api.deleteUser(id).catch(() => {})
   }
 
   return (
@@ -73,12 +80,13 @@ export function UserAdminPage() {
               <input
                 value={u.email}
                 onChange={(e) => updateUser(u.id, { email: e.target.value })}
+                onBlur={() => commitUser(u)}
                 placeholder="email@example.com"
                 className="flex-1 min-w-48 rounded border border-neutral-300 bg-transparent px-3 py-1.5 text-sm"
               />
               <select
                 value={u.role}
-                onChange={(e) => updateUser(u.id, { role: e.target.value as Role })}
+                onChange={(e) => commitUser(u, { role: e.target.value as Role })}
                 className="rounded border border-neutral-300 bg-transparent px-3 py-1.5 text-sm"
               >
                 <option value="admin">Admin - full access</option>
@@ -105,6 +113,7 @@ export function UserAdminPage() {
                       type={visiblePasswordIds.has(u.id) ? 'text' : 'password'}
                       value={u.password}
                       onChange={(e) => updateUser(u.id, { password: e.target.value })}
+                      onBlur={() => commitUser(u)}
                       placeholder="Set a password"
                       className="w-full rounded border border-neutral-300 bg-transparent px-3 py-1.5 text-sm"
                     />
@@ -125,7 +134,7 @@ export function UserAdminPage() {
                       <input
                         type="checkbox"
                         checked={u.canChangeOwnPassword}
-                        onChange={(e) => updateUser(u.id, { canChangeOwnPassword: e.target.checked })}
+                        onChange={(e) => commitUser(u, { canChangeOwnPassword: e.target.checked })}
                       />
                       Can change their own password
                     </label>
@@ -133,7 +142,7 @@ export function UserAdminPage() {
                       <input
                         type="checkbox"
                         checked={u.canManageOtherPasswords}
-                        onChange={(e) => updateUser(u.id, { canManageOtherPasswords: e.target.checked })}
+                        onChange={(e) => commitUser(u, { canManageOtherPasswords: e.target.checked })}
                       />
                       Can view/change other users' passwords
                     </label>
@@ -150,7 +159,7 @@ export function UserAdminPage() {
                             <input
                               type="checkbox"
                               checked={u.permissions[page]?.includes(section) ?? false}
-                              onChange={() => toggleSection(u.id, page, section)}
+                              onChange={() => toggleSection(u, page, section)}
                             />
                             {section}
                           </label>
@@ -164,9 +173,11 @@ export function UserAdminPage() {
           </div>
         ))}
       </div>
-      <p className="text-xs text-neutral-500">
-        Changes here are local until the admin API (Cognito user pool + Postgres permissions table) is connected.
-      </p>
+      {USE_MOCK_API && (
+        <p className="text-xs text-neutral-500">
+          Changes here are local until the admin API (Cognito user pool + Postgres permissions table) is connected.
+        </p>
+      )}
     </div>
   )
 }

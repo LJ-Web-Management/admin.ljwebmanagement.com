@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../lib/apiClient'
-import { addPastCustomers, parseCustomersCsv } from '../lib/pastCustomers'
+import { parseCustomersCsv } from '../lib/pastCustomers'
 import type { PastCustomer } from '../lib/types'
 
 export function PastCustomerSearch({ onSelect }: { onSelect: (customer: PastCustomer) => void }) {
@@ -30,7 +30,7 @@ export function PastCustomerSearch({ onSelect }: { onSelect: (customer: PastCust
     if (!file) return
     const text = await file.text()
     const parsed = parseCustomersCsv(text)
-    addPastCustomers(parsed)
+    await api.importPastCustomers(parsed)
     if (fileInputRef.current) fileInputRef.current.value = ''
     setImportMessage(`Imported ${parsed.length} past customer${parsed.length === 1 ? '' : 's'}.`)
     setTimeout(() => setImportMessage(''), 4000)

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { API_BASE_URL } from '../../lib/env'
-import { addTranscript } from '../../lib/transcripts'
+import { API_BASE_URL, USE_MOCK_API } from '../../lib/env'
 import { usePageTitle } from '../../lib/usePageTitle'
 import { api } from '../../lib/apiClient'
 import type { ChatTranscript } from '../../lib/types'
@@ -20,15 +19,18 @@ export function TranscriptsPage() {
   const onFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    addTranscript({
-      customerName: file.name.replace(/\.[^.]+$/, ''),
-      customerEmail: '',
-      receivedAt: new Date().toISOString(),
-      fileName: file.name,
-      url: URL.createObjectURL(file),
-      summary: 'Manually uploaded, no automated summary yet.',
-      source: 'manual upload',
-    })
+    await api.uploadTranscript(
+      {
+        customerName: file.name.replace(/\.[^.]+$/, ''),
+        customerEmail: '',
+        receivedAt: new Date().toISOString(),
+        fileName: file.name,
+        url: '',
+        summary: 'Manually uploaded, no automated summary yet.',
+        source: 'manual upload',
+      },
+      file,
+    )
     e.target.value = ''
     reload()
   }
@@ -78,8 +80,9 @@ export function TranscriptsPage() {
               <p>Body: {'{ customerName, customerEmail, receivedAt, fileName, summary, fileBase64 }'}</p>
             </div>
             <p className="text-xs text-neutral-500">
-              This endpoint does not exist yet, it is planned for when the backend (API Gateway + Lambda + S3) is
-              deployed. Use "Upload transcript" above to add one manually until then.
+              {USE_MOCK_API
+                ? 'This endpoint does not exist yet, it is planned for when the backend (API Gateway + Lambda + S3) is deployed. Use "Upload transcript" above to add one manually until then.'
+                : 'This endpoint is live. The Apps Script automation still needs to be set up separately to call it, use "Upload transcript" above to add one manually until then.'}
             </p>
           </div>
         )}
