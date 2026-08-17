@@ -2,10 +2,10 @@ export type Role = 'admin' | 'employee' | 'demo'
 
 // Every top-level page and its sub-sections, checkbox-selectable per employee user.
 export const PAGE_SECTIONS = {
-  orders: ['view', 'create', 'edit', 'notes', 'documents'],
+  orders: ['view', 'create', 'edit', 'notes'],
   analytics: ['revenue', 'phases', 'velocity', 'services'],
   messaging: ['direct', 'groups'],
-  transcripts: ['view', 'upload'],
+  transcripts: ['view'],
   admin: ['users', 'permissions'],
 } as const
 
@@ -59,13 +59,6 @@ export interface TaxFee {
   amount: number
 }
 
-export interface OrderDocument {
-  id: string
-  fileName: string
-  uploadedAt: string
-  url: string
-}
-
 export interface Order {
   id: string
   orderNumber: number
@@ -80,7 +73,6 @@ export interface Order {
   taxesAndFees: TaxFee[]
   consultationDate: string | null
   notes: string
-  documents: OrderDocument[]
   createdAt: string
   updatedAt: string
 }
@@ -114,15 +106,4 @@ export interface Message {
   senderEmail: string
   body: string
   sentAt: string
-}
-
-export interface ChatTranscript {
-  id: string
-  customerName: string
-  customerEmail: string
-  receivedAt: string
-  fileName: string
-  url: string
-  summary: string
-  source: 'tawk.to' | 'manual upload'
 }

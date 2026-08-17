@@ -14,7 +14,7 @@ create table public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   email text not null,
   role public.user_role not null default 'employee',
-  -- { orders: ['view','edit',...], analytics: [...], messaging: [...], transcripts: [...], admin: [...] }
+  -- { orders: ['view','edit',...], analytics: [...], messaging: [...], transcripts: ['view'], admin: [...] }
   permissions jsonb not null default '{}'::jsonb,
   can_change_own_password boolean not null default true,
   can_manage_other_passwords boolean not null default false,
@@ -89,16 +89,6 @@ create table public.order_taxes_fees (
   amount numeric(12, 2) not null default 0
 );
 
--- Files live in the "files" Storage bucket at orders/{order_id}/{filename}.
-create table public.order_documents (
-  id uuid primary key default gen_random_uuid(),
-  order_id uuid not null references public.orders (id) on delete cascade,
-  file_name text not null,
-  storage_path text not null,
-  uploaded_at timestamptz not null default now(),
-  uploaded_by uuid references public.profiles (id)
-);
-
 -- Case-insensitive, whitespace-trimmed service grouping for autocomplete +
 -- analytics, per the "LOWER(TRIM(service_text))" requirement.
 create view public.service_suggestions as
@@ -152,23 +142,9 @@ create table public.messages (
   sent_at timestamptz not null default now()
 );
 
--- ---------------------------------------------------------------------
--- Chatbot transcripts (tawk.to -> Apps Script + Gemini -> ingest endpoint)
--- ---------------------------------------------------------------------
-create type public.transcript_source as enum ('tawk.to', 'manual upload');
-
--- Files live in the "files" Storage bucket at transcripts/{transcript_id}/{filename}.
-create table public.chat_transcripts (
-  id uuid primary key default gen_random_uuid(),
-  customer_name text not null default '',
-  customer_email text not null default '',
-  received_at timestamptz not null default now(),
-  file_name text not null,
-  storage_path text not null,
-  summary text not null default '',
-  source public.transcript_source not null default 'manual upload',
-  uploaded_by uuid references public.profiles (id)
-);
+-- Chatbot transcripts live in an external spreadsheet (not this database);
+-- the "transcripts" permission below only gates visibility of the nav link
+-- that points at it.
 
 -- Keep updated_at current on orders.
 create function public.set_updated_at()

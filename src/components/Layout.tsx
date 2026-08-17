@@ -7,9 +7,11 @@ const NAV_ITEMS: { to: string; label: string; page: PageKey }[] = [
   { to: '/orders', label: 'Orders', page: 'orders' },
   { to: '/analytics', label: 'Analytics', page: 'analytics' },
   { to: '/messaging', label: 'Messaging', page: 'messaging' },
-  { to: '/transcripts', label: 'Chatbot Transcripts', page: 'transcripts' },
   { to: '/admin/users', label: 'Users', page: 'admin' },
 ]
+
+const CHATBOT_TRANSCRIPTS_SHEET_URL =
+  'https://docs.google.com/spreadsheets/d/1IXyEU3tQqrP8VzHEpq6GKGmeT-hB7z6D176TrDgwK60/edit?usp=sharing'
 
 export function Layout() {
   const { user, logout, canAccessPage, isDemo } = useAuth()
@@ -35,6 +37,16 @@ export function Layout() {
               {item.label}
             </NavLink>
           ))}
+          {canAccessPage('transcripts') && (
+            <a
+              href={CHATBOT_TRANSCRIPTS_SHEET_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded px-3 py-2 text-sm transition-colors text-white/80 hover:bg-white/10 hover:text-white"
+            >
+              Chatbot Transcripts ↗
+            </a>
+          )}
         </nav>
         <div className="px-4 py-4 border-t border-white/10 text-xs shrink-0">
           <p className="truncate">{user?.email}</p>

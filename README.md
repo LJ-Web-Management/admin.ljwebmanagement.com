@@ -18,9 +18,9 @@ reachable.
 - **Frontend:** React + TypeScript + Vite, Tailwind CSS, React Router. Deployed to GitHub
   Pages via [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) on
   push to `main`, custom domain `admin.ljwebmanagement.com`.
-- **Backend (planned):** Supabase, Postgres + Auth + Storage + Realtime + Edge Functions.
-  Free at this project's scale. See [`infra/README.md`](infra/README.md) and
-  [`supabase/`](supabase/) for the schema, RLS policies, and Edge Functions.
+- **Backend (planned):** Supabase, Postgres + Auth + Realtime. Free at this project's
+  scale. See [`infra/README.md`](infra/README.md) and [`supabase/`](supabase/) for the
+  schema and RLS policies.
 
 ## Local development
 

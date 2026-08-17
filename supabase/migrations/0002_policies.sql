@@ -15,12 +15,10 @@ alter table public.profiles enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_additional_costs enable row level security;
 alter table public.order_taxes_fees enable row level security;
-alter table public.order_documents enable row level security;
 alter table public.past_customers enable row level security;
 alter table public.message_threads enable row level security;
 alter table public.thread_participants enable row level security;
 alter table public.messages enable row level security;
-alter table public.chat_transcripts enable row level security;
 
 -- ---------------------------------------------------------------------
 -- Helpers
@@ -96,13 +94,6 @@ create policy "edit order taxes" on public.order_taxes_fees
   for all using (public.has_section('orders', 'edit'))
   with check (public.has_section('orders', 'edit'));
 
--- Documents are gated by their own section, independent of general edit.
-create policy "view order documents" on public.order_documents
-  for select using (public.has_section('orders', 'documents'));
-create policy "manage order documents" on public.order_documents
-  for all using (public.has_section('orders', 'documents'))
-  with check (public.has_section('orders', 'documents'));
-
 -- ---------------------------------------------------------------------
 -- past_customers (name/address/contact only, no order or financial data)
 -- ---------------------------------------------------------------------
@@ -156,15 +147,3 @@ create policy "send messages in own threads" on public.messages
       where tp.thread_id = messages.thread_id and tp.user_id = auth.uid()
     )
   );
-
--- ---------------------------------------------------------------------
--- chat_transcripts
--- ---------------------------------------------------------------------
-create policy "view transcripts" on public.chat_transcripts
-  for select using (public.has_section('transcripts', 'view'));
-
-create policy "upload transcripts" on public.chat_transcripts
-  for insert with check (public.has_section('transcripts', 'upload'));
-
--- The Apps Script ingestion pipeline uses the service_role key (bypasses
--- RLS entirely) via the transcripts-ingest Edge Function, not this policy.

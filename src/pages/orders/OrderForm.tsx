@@ -5,13 +5,10 @@ import { ServiceInput } from '../../components/ServiceInput'
 import { TimeSince } from '../../components/TimeSince'
 import { api } from '../../lib/apiClient'
 import { useAuth } from '../../lib/auth/AuthContext'
-import { USE_MOCK_API } from '../../lib/env'
 import { generateInvoicePdf } from '../../lib/invoice'
 import { ORDER_PHASES, STARTING_ORDER_NUMBER } from '../../lib/types'
 import { usePageTitle } from '../../lib/usePageTitle'
-import type { AdditionalCost, Order, OrderDocument, OrderPhase, TaxFee } from '../../lib/types'
-
-const ACCEPTED_DOCUMENT_TYPES = '.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+import type { AdditionalCost, Order, OrderPhase, TaxFee } from '../../lib/types'
 
 const emptyOrder = (orderNumber: number): Order => ({
   id: '',
@@ -27,7 +24,6 @@ const emptyOrder = (orderNumber: number): Order => ({
   taxesAndFees: [],
   consultationDate: null,
   notes: '',
-  documents: [],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 })
@@ -89,29 +85,6 @@ export function OrderForm() {
 
   const removeTaxFee = (taxFeeId: string) => {
     setOrder((o) => ({ ...o, taxesAndFees: o.taxesAndFees.filter((t) => t.id !== taxFeeId) }))
-  }
-
-  const onFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? [])
-    if (!files.length) return
-    // Object URLs are session-local until S3 + signed URLs are wired up;
-    // any order document is downloadable by anyone with permission to view the order.
-    const docs: OrderDocument[] = files.map((file) => ({
-      id: crypto.randomUUID(),
-      fileName: file.name,
-      uploadedAt: new Date().toISOString(),
-      url: URL.createObjectURL(file),
-    }))
-    setOrder((o) => ({ ...o, documents: [...o.documents, ...docs] }))
-    e.target.value = ''
-  }
-
-  const removeDocument = (docId: string) => {
-    setOrder((o) => {
-      const doc = o.documents.find((d) => d.id === docId)
-      if (doc?.url.startsWith('blob:')) URL.revokeObjectURL(doc.url)
-      return { ...o, documents: o.documents.filter((d) => d.id !== docId) }
-    })
   }
 
   const [generatingInvoice, setGeneratingInvoice] = useState(false)
@@ -339,32 +312,6 @@ export function OrderForm() {
           />
           <p className="text-xs text-neutral-500 mt-1">Internal only, not included on invoices.</p>
         </Field>
-      )}
-
-      {(isNew || canAccessSection('orders', 'documents')) && (
-        <div className="space-y-2">
-          <h2 className="text-sm font-semibold">Documents</h2>
-          <p className="text-xs text-neutral-500">
-            Anyone with permission to view this order can download these files.
-            {USE_MOCK_API &&
-              ' Once the backend is deployed, uploads store to a private S3 bucket via signed URL instead of a session-local link.'}
-          </p>
-          <input type="file" accept={ACCEPTED_DOCUMENT_TYPES} multiple onChange={onFilesSelected} className="text-sm" />
-          {order.documents.length > 0 && (
-            <ul className="space-y-1">
-              {order.documents.map((d) => (
-                <li key={d.id} className="flex items-center justify-between text-sm">
-                  <a href={d.url} download={d.fileName} className="text-navy hover:underline">
-                    {d.fileName}
-                  </a>
-                  <button onClick={() => removeDocument(d.id)} type="button" className="text-neutral-400 hover:text-red-600 px-2">
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
       )}
 
       <div className="flex gap-2">
