@@ -31,6 +31,11 @@ The frontend currently builds for the GitHub Pages *project page* path
    - Repo variable `SUPABASE_URL` + repo secret `SUPABASE_ANON_KEY`, used only by
      `.github/workflows/supabase-keepalive.yml` to ping the project twice a week so
      the free tier doesn't pause it after 7 days of inactivity.
+4. **Deploy the Typeform intake function** (`supabase functions deploy
+   typeform-order-intake`), set its `TYPEFORM_WEBHOOK_SECRET` secret to a value you
+   choose, then in the Typeform form's Connect > Webhooks settings, add
+   `https://xxxxx.supabase.co/functions/v1/typeform-order-intake` as the webhook URL
+   with that same secret.
 
 ## Planned resources
 
@@ -54,6 +59,12 @@ The frontend currently builds for the GitHub Pages *project page* path
   permission so it can still be shown/hidden per employee).
 - **File uploads:** none. Order documents and transcript uploads were removed; nothing
   in this app writes files, so there's no Storage bucket to provision.
+- **Typeform order intake:** `supabase/functions/typeform-order-intake/` is an Edge
+  Function that receives the intake Typeform's webhook (name, email, notes, and the
+  booked consultation date/time) and creates an order, phase defaulted to
+  "Consultation Booked". Not live-tested yet, see the comment at the top of that file,
+  the date/time field extraction needs checking against one real form submission once
+  both the form and this function are live.
 - **Cost:** $0/month at this scale (free tier: 500MB DB, 50K MAU auth, a few GB
   bandwidth). The keepalive workflow prevents the only real free-tier gotcha, projects
   pausing after a week of no traffic.
