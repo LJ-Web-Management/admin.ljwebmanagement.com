@@ -16,6 +16,7 @@ import {
 } from 'recharts'
 import { api } from '../../lib/apiClient'
 import { useAuth } from '../../lib/auth/AuthContext'
+import { PHASE_HEX } from '../../lib/phaseColors'
 import { ORDER_PHASES } from '../../lib/types'
 import { usePageTitle } from '../../lib/usePageTitle'
 import type { Order } from '../../lib/types'
@@ -154,7 +155,11 @@ export function AnalyticsPage() {
               <XAxis dataKey="phase" fontSize={10} angle={-20} textAnchor="end" interval={0} height={80} />
               <YAxis fontSize={12} />
               <Tooltip />
-              <Bar dataKey="count" fill="#254a81" />
+              <Bar dataKey="count">
+                {phaseDistribution.map((d) => (
+                  <Cell key={d.phase} fill={PHASE_HEX[d.phase]} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>

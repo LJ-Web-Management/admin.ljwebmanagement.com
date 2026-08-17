@@ -3,21 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import { TimeSince } from '../../components/TimeSince'
 import { api } from '../../lib/apiClient'
 import { useAuth } from '../../lib/auth/AuthContext'
+import { PHASE_BADGE_CLASSES } from '../../lib/phaseColors'
 import { ORDER_PHASES } from '../../lib/types'
 import { usePageTitle } from '../../lib/usePageTitle'
 import type { Order, OrderPhase } from '../../lib/types'
-
-const PHASE_COLORS: Record<OrderPhase, string> = {
-  'Consultation Booked': 'bg-neutral-200 text-neutral-800',
-  'Waiting Build': 'bg-amber-100 text-amber-800',
-  'In Progress': 'bg-blue-100 text-blue-800',
-  Completed: 'bg-green-100 text-green-800',
-  Sent: 'bg-teal-100 text-teal-800',
-  'Feedback Changes Awaiting': 'bg-orange-100 text-orange-800',
-  'Feedback Changes In Progress': 'bg-purple-100 text-purple-800',
-  'Feedback Changes Completed': 'bg-indigo-100 text-indigo-800',
-  'Finalized (Done)': 'bg-emerald-200 text-emerald-900',
-}
 
 export function OrdersPage() {
   usePageTitle('Orders')
@@ -117,7 +106,7 @@ export function OrdersPage() {
                   </td>
                   <td className="px-3 py-2 text-neutral-600">{o.serviceText}</td>
                   <td className="px-3 py-2">
-                    <span className={`rounded px-2 py-0.5 text-xs font-medium ${PHASE_COLORS[o.phase]}`}>{o.phase}</span>
+                    <span className={`rounded px-2 py-0.5 text-xs font-medium ${PHASE_BADGE_CLASSES[o.phase]}`}>{o.phase}</span>
                   </td>
                   <td className="px-3 py-2">${o.quotedAmount.toLocaleString()}</td>
                   <td className="px-3 py-2 text-neutral-500">
