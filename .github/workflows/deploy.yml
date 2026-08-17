@@ -34,7 +34,7 @@ jobs:
 
     - name: Sync files to S3
       run: |
-        aws s3 sync ./ s3://blog-ljwebmanagement-website --delete --exclude ".git/*" --exclude ".github/*"
+        aws s3 sync ./ s3://admin-ljwebmanagement-website --delete --exclude ".git/*" --exclude ".github/*"
         # If deploying a build folder (e.g. dist/ or build/), change `./` to `./dist`
 
     - name: Invalidate CloudFront Cache
